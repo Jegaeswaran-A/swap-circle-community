@@ -1,19 +1,27 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { login } = useAuth();
+  const { login, demoMode } = useAuth();
   const navigate = useNavigate();
+
+  // If demo mode becomes active, navigate to home
+  useEffect(() => {
+    if (demoMode) {
+      navigate("/");
+    }
+  }, [demoMode, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +32,10 @@ const Login = () => {
       await login(email, password);
       navigate("/"); // Redirect to home page after successful login
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      // Only set error if we're not in demo mode (demo mode errors are handled by AuthContext)
+      if (!demoMode) {
+        setError(err instanceof Error ? err.message : "Login failed");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -40,6 +51,13 @@ const Login = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <Alert className="mb-4 bg-amber-50 border-amber-200">
+            <InfoIcon className="h-4 w-4 text-amber-600" />
+            <AlertDescription>
+              Backend connection is currently unavailable. You can still experience the app in demo mode by submitting this form.
+            </AlertDescription>
+          </Alert>
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <Alert variant="destructive">
