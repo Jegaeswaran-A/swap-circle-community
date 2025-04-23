@@ -92,7 +92,7 @@ const ItemsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [usingDemoData, setUsingDemoData] = useState(false);
 
   useEffect(() => {
@@ -134,7 +134,7 @@ const ItemsPage = () => {
       );
     }
     
-    if (categoryFilter) {
+    if (categoryFilter && categoryFilter !== "all") {
       results = results.filter(item => item.category === categoryFilter);
     }
     
@@ -185,7 +185,7 @@ const ItemsPage = () => {
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category} value={category}>
                   {category}
@@ -200,7 +200,7 @@ const ItemsPage = () => {
         <div className="text-center py-16">
           <h2 className="text-xl mb-2">No items found</h2>
           <p className="text-gray-500 mb-4">
-            {searchTerm || categoryFilter
+            {searchTerm || categoryFilter !== "all"
               ? "Try adjusting your search or filters"
               : "Be the first to add an item!"}
           </p>
