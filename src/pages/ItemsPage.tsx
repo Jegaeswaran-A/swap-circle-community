@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Item {
   _id: string;
@@ -23,14 +24,76 @@ interface Item {
   createdAt: string;
 }
 
+// Sample data to display when backend connection fails
+const sampleItems: Item[] = [
+  {
+    _id: "1",
+    title: "Vintage Camera",
+    description: "A beautiful vintage camera in excellent condition",
+    condition: "Good",
+    category: "Electronics",
+    imageUrl: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop",
+    owner: {
+      _id: "user1",
+      username: "johndoe",
+      email: "john@example.com"
+    },
+    createdAt: "2023-04-15"
+  },
+  {
+    _id: "2",
+    title: "Mountain Bike",
+    description: "Barely used mountain bike, perfect for trails",
+    condition: "Excellent",
+    category: "Sports",
+    imageUrl: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=1000&auto=format&fit=crop",
+    owner: {
+      _id: "user2",
+      username: "janedoe",
+      email: "jane@example.com"
+    },
+    createdAt: "2023-04-10"
+  },
+  {
+    _id: "3",
+    title: "Acoustic Guitar",
+    description: "Beautiful acoustic guitar with great sound",
+    condition: "Like New",
+    category: "Music",
+    imageUrl: "https://images.unsplash.com/photo-1525201548942-d8732f6617a0?q=80&w=1000&auto=format&fit=crop",
+    owner: {
+      _id: "user3",
+      username: "bobsmith",
+      email: "bob@example.com"
+    },
+    createdAt: "2023-04-05"
+  },
+  {
+    _id: "4",
+    title: "Coffee Table Book",
+    description: "Interesting coffee table book about architecture",
+    condition: "Good",
+    category: "Books",
+    imageUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=1000&auto=format&fit=crop",
+    owner: {
+      _id: "user4",
+      username: "sarahlee",
+      email: "sarah@example.com"
+    },
+    createdAt: "2023-03-28"
+  }
+];
+
 const ItemsPage = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [usingDemoData, setUsingDemoData] = useState(false);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -42,9 +105,14 @@ const ItemsPage = () => {
         const data = await response.json();
         setItems(data);
         setFilteredItems(data);
+        setUsingDemoData(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        console.error(err);
+        console.error("Error fetching items:", err);
+        // Use sample data when API is not available
+        setItems(sampleItems);
+        setFilteredItems(sampleItems);
+        setUsingDemoData(true);
+        setError("Could not connect to the server. Showing demo data instead.");
       } finally {
         setLoading(false);
       }
@@ -84,17 +152,16 @@ const ItemsPage = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex flex-col justify-center items-center min-h-screen">
-        <p className="text-red-500 mb-4">{error}</p>
-        <Button onClick={() => window.location.reload()}>Try Again</Button>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
+      {usingDemoData && (
+        <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-md">
+          <p className="text-amber-700">
+            Using demo data - Unable to connect to the backend server. Please follow the setup instructions in README-SETUP.md.
+          </p>
+        </div>
+      )}
+      
       <div className="flex flex-col md:flex-row justify-between items-center mb-6">
         <h1 className="text-2xl font-bold mb-4 md:mb-0">Explore Items</h1>
         <Link to="/add-item">
